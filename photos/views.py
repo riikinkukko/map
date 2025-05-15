@@ -13,6 +13,7 @@ from .forms import ProfileForm
 from .models import Photo, Tag
 from .forms import PhotoForm
 from django.contrib.auth.decorators import login_required
+from django.utils.text import slugify
 
 @login_required
 def upload_photo(request):
@@ -164,7 +165,6 @@ def gallery_view(request):
     images = Photo.objects.all().order_by('-id')
     return render(request, 'photos/gallery.html', {'images': images})
 
-from django.utils.text import slugify
 
 @login_required
 def my_photos_view(request):
