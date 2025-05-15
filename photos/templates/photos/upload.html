@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Загрузка фото</title>
+    <link rel="stylesheet" href="{% static 'css/upload.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="40px" height="40px"></a>
+        <div class="nav-links">
+          <a href="/upload/">Загрузить фото</a>
+          <a href="/gallery/">Галерея</a>
+          <a href="/profile/">Профиль</a>
+        </div>
+  </nav>
+
+<div class="upload-container">
+    <h1>Загрузка фотографии</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Название</label>
+            <input type="text" name="name" id="{{ form.name.id_for_label }}" value="{{ form.name.value|default:'' }}" style="width: 60%; padding: 10px; border-radius: 6px; background-color: #2a2a2a; border: none; color: #fff;">
+        </div>
+        <div class="form-group">
+            <label for="{{ form.image.id_for_label }}">Изображение</label>
+            {{ form.image }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Описание</label>
+            {{ form.description }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.date_taken.id_for_label }}">Дата съёмки</label>
+            {{ form.date_taken }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.latitude.id_for_label }}">Координаты</label>
+            <div style="display: flex; gap: 12px;">
+                <input type="number" step="any" name="latitude" id="{{ form.latitude.id_for_label }}" value="{{ form.latitude.value|default:'' }}" placeholder="Широта"
+                style="width: 48%; padding: 10px; border-radius: 6px; background-color: #2a2a2a; border: none; color: #fff;">
+                <input type="number" step="any" name="longitude" id="{{ form.longitude.id_for_label }}" value="{{ form.longitude.value|default:'' }}" placeholder="Долгота"
+               style="width: 48%; padding: 10px; border-radius: 6px; background-color: #2a2a2a; border: none; color: #fff;">
+            </div>
+        </div>
+        <button type="submit">Загрузить</button>
+    </form>
+</div>
+
+</body>
+</html>

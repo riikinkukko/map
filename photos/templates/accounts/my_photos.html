@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Мои фото</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .photo-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .photo-card {
+      background-color: #1e1e1e;
+      padding: 15px;
+      border-radius: 10px;
+      width: 48%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: contain;
+      background-color: #000;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #333;
+    }
+
+    .photo-card input,
+    .photo-card textarea {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 8px;
+      background-color: #2a2a2a;
+      border: none;
+      color: #fff;
+      border-radius: 4px;
+    }
+
+    .photo-card button {
+      padding: 8px 12px;
+      background-color: #3366cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .photo-card button:hover {
+      background-color: #2952a3;
+    }
+
+    .delete-btn {
+      background-color: #cc3333;
+      margin-top: 8px;
+    }
+
+    .delete-btn:hover {
+      background-color: #a32626;
+    }
+
+    @media (max-width: 768px) {
+      .photo-card {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Мои фото</h1>
+
+  <div class="photo-grid">
+    {% for photo in photos %}
+      <div class="photo-card">
+        <img src="{{ photo.image.url }}" alt="Фото">
+
+        <form method="post" action="{% url 'edit_photo' photo.id %}">
+          {% csrf_token %}
+          <input type="text" name="name" value="{{ photo.name }}" placeholder="Название">
+          <textarea name="description" rows="2" placeholder="Описание">{{ photo.description }}</textarea>
+          <input type="date" name="date_taken" value="{{ photo.date_taken|date:'Y-m-d' }}">
+          <input type="number" step="any" name="latitude" value="{{ photo.latitude }}" placeholder="Широта">
+          <input type="number" step="any" name="longitude" value="{{ photo.longitude }}" placeholder="Долгота">
+          <button type="submit">Сохранить</button>
+        </form>
+
+        <form method="post" action="{% url 'delete_photo' photo.id %}">
+          {% csrf_token %}
+          <button type="submit" class="delete-btn">Удалить</button>
+        </form>
+      </div>
+    {% empty %}
+      <p>У вас пока нет загруженных фото.</p>
+    {% endfor %}
+  </div>
+</body>
+</html>
