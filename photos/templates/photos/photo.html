@@ -58,12 +58,12 @@
       font-size: 14px;
     }
 
-    a.user-link {
+    button.user-link {
       color: #6699ff;
       text-decoration: none;
     }
 
-    a.user-link:hover {
+    button.user-link:hover {
       text-decoration: underline;
     }
     .photo-container {
@@ -123,13 +123,15 @@
   </div>
 </nav>
   <div class="photo-container">
-    <a href="/" class="close-button-card" title="Закрыть и вернуться на карту">
-      <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" viewBox="0 0 24 24" width="32" height="32" stroke="#ccc" fill="none" stroke-width="2.5">
-        <line x1="18" y1="6" x2="6" y2="18"/>
-        <line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </a>
-
+    <form method="post">
+      {% csrf_token %}
+      <button type ='submit' class="close-button-card" title="Закрыть и вернуться на карту">
+        <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" viewBox="0 0 24 24" width="32" height="32" stroke="#ccc" fill="none" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </form>
 
     <img src="{{ photo.image.url }}" alt="Фото" class="photo-image">
 

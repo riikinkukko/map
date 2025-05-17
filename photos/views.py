@@ -14,6 +14,8 @@ from .models import Photo, Tag
 from .forms import PhotoForm
 from django.contrib.auth.decorators import login_required
 from django.utils.text import slugify
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 
 @login_required
@@ -25,10 +27,12 @@ def upload_photo(request):
             photo.add_id = request.user
             photo.save()
             form.save_m2m()
-            return redirect('map')
+
+            return HttpResponseRedirect(f"{reverse('map')}?lat={photo.latitude}&lng={photo.longitude}")
     else:
         form = PhotoForm()
     return render(request, 'photos/upload.html', {'form': form})
+
 
 class MapView(TemplateView):
     template_name = 'photos/map.html'
@@ -64,6 +68,9 @@ class PhotoView(APIView):
 
 def view_photo(request, photo_id):
     photo = get_object_or_404(Photo, id=photo_id)
+
+    if request.method == 'POST':
+        return HttpResponseRedirect(f"{reverse('map')}?lat={photo.latitude}&lng={photo.longitude}")
 
     return render(request, 'photos/photo.html', {
         'photo': photo,
@@ -148,7 +155,7 @@ def profile_view(request):
     return render(request, 'accounts/profile.html', {
         'user': user,
         'profile': profile,
-        'form': form
+        'form': form,
     })
 
 

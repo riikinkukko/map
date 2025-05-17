@@ -84,13 +84,29 @@
 
   <script>
     const map = new maplibregl.Map({
-      container: 'map',
-      style: 'https://api.maptiler.com/maps/streets/style.json?key=sWKhy7cFl8M6pIOjF1mo',
-      center: [37.6173, 55.7558],
-      zoom: 10
+  container: 'map',
+  style: 'https://api.maptiler.com/maps/streets/style.json?key=sWKhy7cFl8M6pIOjF1mo',
+  center: [37.6173, 55.7558],
+  zoom: 10
     });
 
     map.addControl(new maplibregl.NavigationControl());
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const latParam = urlParams.get('lat');
+    const lngParam = urlParams.get('lng');
+
+    if (latParam && lngParam) {
+      const lat = parseFloat(latParam.replace(',', '.'));
+      const lng = parseFloat(lngParam.replace(',', '.'));
+
+      if (!isNaN(lat) && !isNaN(lng)) {
+        map.setCenter([lng, lat]);
+        map.setZoom(14);
+      }
+    }
+
+
 
     let superCluster;
     let markers = [];
