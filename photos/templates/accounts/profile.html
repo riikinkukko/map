@@ -123,6 +123,9 @@
   <nav class="navbar">
   <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="40px" height="40px"></a>
   <div class="nav-links">
+    {% if is_superuser %}
+      <a href="/moderation/">Панель модерации</a>
+    {% endif %}
     <a href="/upload/">Загрузить фото</a>
     <a href="/gallery/">Галерея</a>
     {% if request.user.is_authenticated %}
@@ -147,12 +150,13 @@
   <div class="username">{{ user.username }}</div><form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;" onchange="this.form.submit()">
-
     <label for="avatar" style="cursor: pointer;" title="Изменить аватар">
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#ccc" viewBox="0 0 24 24">
         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.41l-2.34-2.34a1.003 1.003 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
       </svg>
     </label>
+      <div class="stat">{{ user.email }}</div>
+      <div class="stat">ID: {{ user.id }}</div>
   <div class="stat">Зарегистрирован: {{ user.date_joined|date:"d M Y" }}</div>
 
 

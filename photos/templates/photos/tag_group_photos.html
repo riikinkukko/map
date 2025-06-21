@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+  <style>
+  .photo-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .photo-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 220px;
+    text-align: center;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+  <h2>Групповые фото по тегу "{{ tag.name }}"</h2>
+
+{% if photos %}
+  <div class="photo-grid">
+    {% for photo in photos %}
+      <div class="photo-card">
+        <a href="{% url 'view_photo' photo.id %}">
+          <img src="{{ photo.image.url }}" alt="{{ photo.name }}" width="200">
+        </a>
+        <p>Автор: {{ photo.add_id.username }}</p>
+        <p>{{ photo.description|truncatechars:100 }}</p>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>Пока нет фотографий в группе.</p>
+{% endif %}
+
+
+</body>
+</html>

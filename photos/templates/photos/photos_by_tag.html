@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <h1>Фотографии с тегом "{{ tag.name }}"</h1>
+
+  {% if photos %}
+    <div class="photo-grid">
+      {% for photo in photos %}
+        <div class="photo-item">
+          <a href="{% url 'view_photo' photo.id %}">
+            <img src="{{ photo.image.url }}" alt="{{ photo.name }}" style="max-width: 200px;">
+          </a>
+          <p>Автор: {{ photo.add_id.username }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Фотографии с этим тегом не найдены.</p>
+  {% endif %}
+<h3>Запросы, полученные вами</h3>
+<ul>
+  {% for req in received_requests %}
+    <li>
+      {{ req.from_user.username }} — {{ req.created_at|date:"d.m.Y H:i" }} — {{ req.get_status_display }}
+
+      {% if req.status == 'pending' %}
+        <form method="post" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="request_id" value="{{ req.id }}">
+          <input type="hidden" name="action" value="accept">
+          <button type="submit">Принять</button>
+        </form>
+        <form method="post" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="request_id" value="{{ req.id }}">
+          <input type="hidden" name="action" value="decline">
+          <button type="submit">Отклонить</button>
+        </form>
+      {% endif %}
+    </li>
+  {% empty %}
+    <li>Нет полученных запросов.</li>
+  {% endfor %}
+</ul>
+
+<h3>Запросы, отправленные вами</h3>
+<ul>
+  {% for req in sent_requests %}
+    <li>{{ req.to_user.username }} — {{ req.created_at|date:"d.m.Y H:i" }} — {{ req.get_status_display }}</li>
+  {% empty %}
+    <li>Нет отправленных запросов.</li>
+  {% endfor %}
+</ul>
+
+<h2>Пользователи с тегом "{{ tag.name }}"</h2>
+<ul>
+  {% for user in users_with_tag %}
+    <li>
+      {{ user.username }}
+      <form method="post" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="send">
+        <input type="hidden" name="to_user_id" value="{{ user.id }}">
+        <button type="submit">Отправить запрос на объединение</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>
+<h2>Группа пользователей по тегу "{{ tag.name }}"</h2>
+<ul>
+  {% for user in tag_group_members %}
+    <li>{{ user.username }}</li>
+  {% empty %}
+    <li>Нет участников группы.</li>
+  {% endfor %}
+</ul>
+</body>
+</html>

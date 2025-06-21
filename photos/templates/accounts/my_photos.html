@@ -92,6 +92,9 @@
   <nav class="navbar">
   <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="40px" height="40px"></a>
   <div class="nav-links">
+    {% if is_superuser %}
+      <a href="/moderation/">Панель модерации</a>
+    {% endif %}
     <a href="/upload/">Загрузить фото</a>
     <a href="/gallery/">Галерея</a>
     {% if request.user.is_authenticated %}

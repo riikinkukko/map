@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Карта</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/supercluster@7.1.5/dist/supercluster.min.js"></script>
@@ -16,15 +16,72 @@
       background-color: #121212;
       color: #fff;
       font-family: 'Segoe UI', sans-serif;
+      overflow-x: hidden;
     }
 
     #map {
       width: 100%;
-      height: calc(100vh - 60px);
+      height: calc(100vh - 50px);
     }
+
+    /* Навбар с горизонтальным скроллом */
+    .navbar {
+      display: flex;
+      align-items: center;
+      background-color: #1a1a1a;
+      padding: 8px 15px;
+      height: 50px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1000;
+    }
+
+    .nav-links {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      white-space: nowrap;
+      flex-grow: 1;
+      padding: 0 10px;
+    }
+
+    .nav-links::-webkit-scrollbar {
+      display: none;
+    }
+
+    .logo {
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 12px;
+      margin: 0 5px;
+      border-radius: 4px;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .nav-links a:hover {
+      background-color: #333;
+    }
+
+    .logout-button {
+      display: flex;
+      align-items: center;
+    }
+
+    .door-icon {
+      margin-right: 5px;
+    }
+
+    /* Маркеры на карте */
     .marker, .cluster-marker {
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 0 5px rgba(0,0,0,0.6);
@@ -52,14 +109,191 @@
       padding: 2px 4px;
       border-radius: 0 0 0 4px;
     }
+
+    /* Переключатель стилей карты */
+    .map-style-switcher {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      z-index: 1;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .map-style-switcher button {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      color: white;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .map-style-switcher button:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .map-style-switcher button.active {
+      background: rgba(255, 255, 255, 0.2);
+      font-weight: bold;
+    }
+
+    /* Временной слайдер */
+    .timeline-container {
+      position: fixed;
+      bottom: 15px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      z-index: 1000;
+      padding: 0 10px;
+      transform: translateY(100px);
+      transition: transform 0.5s ease;
+    }
+
+    .timeline {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 12px 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.7);
+      position: relative;
+    }
+
+    .timeline-slider {
+      width: 100%;
+      height: 6px;
+      -webkit-appearance: none;
+      background: linear-gradient(to right, #f1f1f1, #4CAF50);
+      border-radius: 3px;
+      outline: none;
+      margin: 12px 0;
+      transition: opacity 0.2s;
+    }
+
+    .timeline-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #4CAF50;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .timeline-slider::-webkit-slider-thumb:active {
+      transform: scale(1.2);
+    }
+
+    .current-year-display {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      color: #333;
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      min-width: 50px;
+      text-align: center;
+    }
+
+    .timeline-labels {
+      display: flex;
+      justify-content: space-between;
+      color: #333;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    /* Адаптация для мобильных */
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 8px 10px;
+      }
+
+      .nav-links a {
+        padding: 6px 8px;
+        font-size: 13px;
+      }
+
+      .map-style-switcher {
+        top: 55px;
+        right: 5px;
+      }
+
+      .timeline {
+        padding: 10px 12px;
+      }
+
+      .current-year-display {
+        font-size: 13px;
+        top: -25px;
+      }
+    }
+    #tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px;
+      background-color: #1a1a1a;
+      border-bottom: 1px solid #333;
+    }
+
+    .tag-button, .clear-tag-button {
+      appearance: none;
+      background-color: #2a2a2a;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s, border 0.3s;
+    }
+
+    .tag-button:hover, .clear-tag-button:hover {
+      background-color: #3a3a3a;
+      border-color: #666;
+    }
+
+    .tag-button.active {
+      background-color: #4CAF50;
+      border-color: #4CAF50;
+      color: #fff;
+    }
+    .marker.filtered {
+      border: 3px solid #4CAF50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.7);
+    }
+    .cluster-marker.filtered {
+      border: 3px solid #4CAF50;
+      box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+    }
+
   </style>
   <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
 </head>
 <body>
 
 <nav class="navbar">
-  <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="40px" height="40px"></a>
+  <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="34px" height="34px"></a>
   <div class="nav-links">
+    {% if is_superuser %}
+      <a href="/moderation/">Панель модерации</a>
+    {% endif %}
     {% if request.user.is_authenticated %}
         <a href="/upload/">Загрузить фото</a>
     {% endif %}
@@ -67,7 +301,7 @@
     {% if request.user.is_authenticated %}
       <a href="/profile/">{{ request.user }}</a>
       <a href="/logout/" class="logout-button">
-        <svg xmlns="http://www.w3.org/2000/svg" class="door-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="door-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M10 17l5-5-5-5" stroke="white"/>
         <path d="M4 12h11" stroke="white"/>
         <path d="M20 4v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2z" stroke="white"/>
@@ -79,107 +313,479 @@
     {% endif %}
   </div>
 </nav>
+<div id="tags-container"></div>
+<div id="map"></div>
 
-  <div id="map"></div>
+<div class="timeline-container">
+  <div class="timeline">
+    <div class="current-year-display" id="currentYearDisplay">Загрузка...</div>
+    <input type="range" min="1900" max="2025" value="2025" class="timeline-slider" id="yearSlider" disabled>
+    <div class="timeline-labels">
+      <span id="minYearLabel">1900</span>
+      <span id="maxYearLabel">2025</span>
+    </div>
+  </div>
+</div>
 
-  <script>
-    const map = new maplibregl.Map({
-  container: 'map',
-  style: 'https://api.maptiler.com/maps/streets/style.json?key=sWKhy7cFl8M6pIOjF1mo',
-  center: [37.6173, 55.7558],
-  zoom: 10
-    });
+<script>
+  // Объявляем стили карты
+  const mapStyles = {
+    standard: 'https://api.maptiler.com/maps/01972c4f-4c6a-75bb-b504-fe31399eed4c/style.json?key=LVcH2SgMyVASxBgchHDP',
+    satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+  };
 
-    map.addControl(new maplibregl.NavigationControl());
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const latParam = urlParams.get('lat');
-    const lngParam = urlParams.get('lng');
-
-    if (latParam && lngParam) {
-      const lat = parseFloat(latParam.replace(',', '.'));
-      const lng = parseFloat(lngParam.replace(',', '.'));
-
-      if (!isNaN(lat) && !isNaN(lng)) {
-        map.setCenter([lng, lat]);
-        map.setZoom(14);
-      }
-    }
-
-
-
-    let superCluster;
-    let markers = [];
-
-    function clearMarkers() {
-      markers.forEach(m => m.remove());
-      markers = [];
-    }
-
-    function updateMarkers() {
-      if (!superCluster) return;
-
-      const bounds = map.getBounds();
-      const zoom = Math.round(map.getZoom());
-
-      const clusters = superCluster.getClusters([
-        bounds.getWest(),
-        bounds.getSouth(),
-        bounds.getEast(),
-        bounds.getNorth()
-      ], zoom);
-
-      clearMarkers();
-
-      clusters.forEach(cluster => {
-        const el = document.createElement('div');
-        const [lng, lat] = cluster.geometry.coordinates;
-
-        if (cluster.properties.cluster) {
-          el.className = 'cluster-marker';
-          const firstImage = cluster.properties.firstImage || '/static/default.jpg';
-          el.innerHTML = `<img src="${firstImage}"><span>${cluster.properties.point_count_abbreviated || cluster.properties.point_count}</span>`;
-          el.addEventListener('click', () => {
-            const expansionZoom = superCluster.getClusterExpansionZoom(cluster.id);
-            map.easeTo({ center: [lng, lat], zoom: expansionZoom });
-          });
-        } else {
-          el.className = 'marker';
-          el.innerHTML = `<img src="${cluster.properties.image}" />`;
-          el.addEventListener('click', () => {
-            window.location.href = `/photo/${cluster.properties.id}`;
-          });
+  // Инициализация карты с начальным стилем спутника
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: {
+      version: 8,
+      sources: {
+        'esri-satellite': {
+          type: 'raster',
+          tiles: [mapStyles.satellite],
+          tileSize: 256,
+          attribution: '© Esri'
         }
+      },
+      layers: [{
+        id: 'esri-satellite-layer',
+        type: 'raster',
+        source: 'esri-satellite',
+        minzoom: 0,
+        maxzoom: 22
+      }]
+    },
+    center: [37.6173, 55.7558],
+    zoom: 10,
+    attributionControl: false
+  });
 
-        const marker = new maplibregl.Marker(el)
-          .setLngLat([lng, lat])
-          .addTo(map);
+  // Добавляем навигационные кнопки (без компаса)
+  map.addControl(new maplibregl.NavigationControl({
+    showCompass: false,
+    showZoom: true,
+    visualizePitch: false
+  }));
 
-        markers.push(marker);
+  // Переключатель стилей карты (Карта / Спутник)
+  let styleSwitcher;
+  function createStyleSwitcher() {
+    const container = document.createElement('div');
+    container.className = 'map-style-switcher';
+
+    const standardBtn = document.createElement('button');
+    standardBtn.textContent = 'Карта';
+    standardBtn.onclick = () => switchMapStyle('standard');
+
+    const satelliteBtn = document.createElement('button');
+    satelliteBtn.textContent = 'Спутник';
+    satelliteBtn.className = 'active';
+    satelliteBtn.onclick = () => switchMapStyle('satellite');
+
+    container.appendChild(standardBtn);
+    container.appendChild(satelliteBtn);
+    map.getContainer().appendChild(container);
+
+    styleSwitcher = {
+      container,
+      buttons: { standard: standardBtn, satellite: satelliteBtn }
+    };
+  }
+
+  // Функция переключения стилей
+  function switchMapStyle(style) {
+    if (style === 'satellite') {
+      map.setStyle({
+        version: 8,
+        sources: {
+          'esri-satellite': {
+            type: 'raster',
+            tiles: [mapStyles.satellite],
+            tileSize: 256,
+            attribution: '© Esri'
+          }
+        },
+        layers: [{
+          id: 'esri-satellite-layer',
+          type: 'raster',
+          source: 'esri-satellite',
+          minzoom: 0,
+          maxzoom: 22
+        }]
       });
+    } else {
+      map.setStyle(mapStyles.standard);
     }
 
-    map.on('load', () => {
-      fetch('/api/photos/geojson/')
-        .then(res => res.json())
-        .then(data => {
-          superCluster = new Supercluster({
-            radius: 60,
-            maxZoom: 17,
-            map: props => ({ firstImage: props.image }),
-            reduce: (accumulated, props) => {
-              if (!accumulated.firstImage) {
-                accumulated.firstImage = props.image;
-              }
-            }
-          });
-
-          superCluster.load(data.features);
-          updateMarkers();
-        });
+    // Обновляем состояние кнопок
+    Object.keys(styleSwitcher.buttons).forEach(key => {
+      styleSwitcher.buttons[key].classList.toggle('active', key === style);
     });
 
-    map.on('moveend', updateMarkers);
-  </script>
+    // Обновляем маркеры после смены стиля с небольшой задержкой
+    setTimeout(updateMarkers, 100);
+  }
+
+  // Глобальные переменные
+  let superCluster = null;
+  let markers = [];
+  let allFeatures = [];
+  let minYear = 1900;
+  let maxYear = new Date().getFullYear();
+  let currentYear = maxYear;
+  let isDragging = false;
+  let currentTag = null;
+  let currentFilter = 'year';
+  let updateTimeout = null;
+
+  // DOM элементы управления годом
+  const yearSlider = document.getElementById('yearSlider');
+  const currentYearDisplay = document.getElementById('currentYearDisplay');
+  const minYearLabel = document.getElementById('minYearLabel');
+  const maxYearLabel = document.getElementById('maxYearLabel');
+
+  // Получаем диапазон годов с сервера и обновляем слайдер
+  async function getYearRange() {
+    try {
+      const response = await fetch('/api/photos/year-range/');
+      if (!response.ok) throw new Error('Ошибка загрузки диапазона годов');
+      const data = await response.json();
+
+      minYear = Math.max(1800, data.min_year || minYear);
+      maxYear = Math.min(new Date().getFullYear(), data.max_year || maxYear);
+      currentYear = maxYear;
+
+      yearSlider.min = minYear;
+      yearSlider.max = maxYear;
+      yearSlider.value = maxYear;
+      yearSlider.disabled = false;
+
+      minYearLabel.textContent = minYear;
+      maxYearLabel.textContent = maxYear;
+      currentYearDisplay.textContent = maxYear;
+
+      return { minYear, maxYear };
+    } catch (error) {
+      console.error('Ошибка при получении диапазона годов:', error);
+      return { minYear, maxYear };
+    }
+  }
+
+  // Обработчики для слайдера года
+  yearSlider.addEventListener('input', function () {
+    currentYear = parseInt(this.value);
+    currentYearDisplay.textContent = currentYear;
+
+    clearTimeout(updateTimeout);
+    if (!isDragging) {
+      currentTag = null;
+      currentFilter = 'year';
+      filterMarkersByYear(currentYear);
+    }
+  });
+
+  yearSlider.addEventListener('mousedown', () => isDragging = true);
+  yearSlider.addEventListener('mouseup', () => {
+    isDragging = false;
+    currentTag = null;
+    currentFilter = 'year';
+    filterMarkersByYear(currentYear);
+  });
+  yearSlider.addEventListener('touchstart', () => isDragging = true);
+  yearSlider.addEventListener('touchend', () => {
+    isDragging = false;
+    currentTag = null;
+    currentFilter = 'year';
+    filterMarkersByYear(currentYear);
+  });
+
+  // Фильтрация маркеров по году с загрузкой с сервера
+  async function filterMarkersByYear(year) {
+  // Загружаем данные с сервера с параметром year, передавая его в API
+  const response = await fetch(`/api/photos/geojson/?year=${year}`);
+  if (!response.ok) throw new Error('Ошибка загрузки фото по году');
+
+  const data = await response.json();
+
+  // Загружаем данные в кластер
+  superCluster.load(data.features);
+
+  // Обновляем маркеры на карте
+  updateMarkers();
+}
+
+
+  // Очистка всех маркеров с карты
+  function clearMarkers() {
+    markers.forEach(marker => marker.remove());
+    markers = [];
+  }
+
+  // Обновление маркеров на карте с учётом текущего кластера и фильтра
+  function updateMarkers() {
+    if (!superCluster) return;
+
+    const bounds = map.getBounds();
+    const zoom = Math.round(map.getZoom());
+
+    const clusters = superCluster.getClusters(
+      [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+      zoom
+    );
+
+    clearMarkers();
+
+    clusters.forEach(cluster => {
+      const el = document.createElement('div');
+      const [lng, lat] = cluster.geometry.coordinates;
+
+      if (cluster.properties.cluster) {
+        el.className = 'cluster-marker';
+        if (currentFilter === 'tag') {
+          el.classList.add('filtered');
+        }
+        const firstImage = cluster.properties.firstImage || '/static/default.jpg';
+        el.innerHTML = `<img src="${firstImage}"><span>${cluster.properties.point_count_abbreviated || cluster.properties.point_count}</span>`;
+
+        el.addEventListener('click', () => {
+          const expansionZoom = superCluster.getClusterExpansionZoom(cluster.id);
+          map.easeTo({ center: [lng, lat], zoom: expansionZoom });
+        });
+      } else {
+        el.className = 'marker';
+        if (currentFilter === 'tag') {
+          el.classList.add('filtered');
+        }
+        el.innerHTML = `<img src="${cluster.properties.image}" />`;
+        el.addEventListener('click', () => {
+          window.location.href = `/photo/${cluster.properties.id}`;
+        });
+      }
+      el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      // Удаляем предыдущий popup, если есть
+      const oldPopup = document.getElementById('custom-context-menu');
+      if (oldPopup) oldPopup.remove();
+
+      // Создаем контейнер меню
+      const menu = document.createElement('div');
+      menu.id = 'custom-context-menu';
+      menu.style.position = 'absolute';
+      menu.style.top = `${e.clientY}px`;
+      menu.style.left = `${e.clientX}px`;
+      menu.style.background = '#fff';
+      menu.style.border = '1px solid #ccc';
+      menu.style.padding = '10px';
+      menu.style.zIndex = 10000;
+      menu.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+      menu.style.borderRadius = '4px';
+
+      const btn = document.createElement('button');
+      btn.textContent = 'Посмотреть событие';
+      btn.style.cursor = 'pointer';
+      console.log('Cluster props:', cluster.properties);
+      btn.onclick = () => {
+        // Скрываем меню
+        menu.remove();
+        // Фильтрация по тегу
+        if (cluster.properties.tag) {
+          loadPhotosByTag(cluster.properties.tag);
+          highlightActiveTag(cluster.properties.tag);
+        } else {
+          alert('У этого фото нет тега для фильтрации.');
+        }
+      };
+
+      menu.appendChild(btn);
+
+      // Добавляем меню в body
+      document.body.appendChild(menu);
+
+      // Закрытие меню при клике вне
+      const closeMenu = (event) => {
+        if (!menu.contains(event.target)) {
+          menu.remove();
+          document.removeEventListener('click', closeMenu);
+        }
+      };
+
+      document.addEventListener('click', closeMenu);
+    });
+
+      const marker = new maplibregl.Marker(el).setLngLat([lng, lat]).addTo(map);
+      markers.push(marker);
+    });
+  }
+
+  // Загрузка всех фотографий без фильтров (на случай, если понадобится)
+  async function loadAllPhotos() {
+    try {
+      const response = await fetch('/api/photos/geojson/');
+      if (!response.ok) throw new Error('Ошибка загрузки всех фото');
+
+      const data = await response.json();
+      allFeatures = data.features;
+
+      if (!superCluster) {
+        superCluster = new Supercluster({
+          radius: 60,
+          maxZoom: 17,
+          map: props => ({ firstImage: props.image, id: props.id, image: props.image, tag: props.tag }),
+          reduce: (accumulated, props) => {
+            if (!accumulated.firstImage) {
+              accumulated.firstImage = props.image;
+            }
+            if (!accumulated.tag && props.tag) {
+              accumulated.tag = props.tag;
+            }
+          }
+        });
+      }
+
+      superCluster.load(allFeatures);
+      updateMarkers();
+    } catch (err) {
+      console.error('Ошибка при загрузке всех фото:', err);
+    }
+  }
+
+  // Загрузка фотографий по тегу
+async function loadPhotosByTag(tag) {
+  try {
+    const response = await fetch(`/api/photos/geojson/?tag=${encodeURIComponent(tag)}`);
+    if (!response.ok) throw new Error('Ошибка загрузки фото по тегу');
+
+    const data = await response.json();
+
+    allFeatures = data.features;
+
+    superCluster.load(allFeatures);
+    updateMarkers();
+  } catch (err) {
+    console.error('Ошибка при загрузке фото по тегу:', err);
+  }
+}
+
+
+  // Загрузка тегов и рендер кнопок для фильтрации
+  async function loadTags() {
+    try {
+      const response = await fetch('/api/user-tags/');
+      if (!response.ok) throw new Error('Ошибка загрузки тегов');
+      const tags = await response.json();
+
+      const container = document.getElementById('tags-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      // Кнопка сброса фильтра по тегу
+      const clearBtn = document.createElement('button');
+      clearBtn.textContent = 'Сбросить фильтр';
+      clearBtn.classList.add('clear-tag-button');
+      clearBtn.onclick = async () => {
+        currentTag = null;
+        currentFilter = 'year';
+
+        await getYearRange();
+        await filterMarkersByYear(currentYear);
+        highlightActiveTag(null);
+      };
+      container.appendChild(clearBtn);
+
+      // Кнопки для каждого тега
+      tags.forEach(tag => {
+        if (!tag || tag.trim() === '') return;
+
+        const btn = document.createElement('button');
+        btn.textContent = tag;
+        btn.classList.add('tag-button');
+        btn.onclick = () => {
+          loadPhotosByTag(tag);
+          highlightActiveTag(tag);
+        };
+        container.appendChild(btn);
+      });
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Подсветка активного тега в UI
+  function highlightActiveTag(tag) {
+    document.querySelectorAll('.tag-button').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent === tag);
+    });
+  }
+
+  // Инициализация после загрузки DOM
+  document.addEventListener('DOMContentLoaded', loadTags);
+
+  // Инициализация карты и данных после загрузки стиля
+  map.on('load', async () => {
+    createStyleSwitcher();
+    await getYearRange();
+    currentFilter = 'year';
+
+    // Загрузка данных по текущему году
+    try {
+      const response = await fetch(`/api/photos/geojson/?year=${currentYear}`);
+      if (!response.ok) throw new Error('Ошибка загрузки фото по году');
+
+      const data = await response.json();
+      allFeatures = data.features;
+
+      superCluster = new Supercluster({
+        radius: 60,
+        maxZoom: 17,
+        map: props => ({ firstImage: props.image, id: props.id, image: props.image, tag: props.tag }),
+        reduce: (accumulated, props) => {
+          if (!accumulated.firstImage) {
+            accumulated.firstImage = props.image;
+          }
+          if (!accumulated.tag && props.tag) {
+              accumulated.tag = props.tag;
+            }
+        }
+      });
+
+      superCluster.load(allFeatures);
+      updateMarkers();
+
+      // Анимация для таймлайна (если есть)
+      const timelineContainer = document.querySelector('.timeline-container');
+      if (timelineContainer) timelineContainer.style.transform = 'translateY(0)';
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  // Обновление маркеров при перемещении карты
+  map.on('moveend', updateMarkers);
+
+  // Немного стилизации прозрачности таймлайна при касании
+  map.on('touchstart', () => {
+    const timelineContainer = document.querySelector('.timeline-container');
+    if (timelineContainer) timelineContainer.style.opacity = '0.5';
+  });
+  map.on('touchend', () => {
+    const timelineContainer = document.querySelector('.timeline-container');
+    if (timelineContainer) timelineContainer.style.opacity = '1';
+  });
+
+  // Если в URL есть параметры lat/lng — центрируем карту на них
+  const urlParams = new URLSearchParams(window.location.search);
+  const latParam = urlParams.get('lat');
+  const lngParam = urlParams.get('lng');
+  if (latParam && lngParam) {
+    const lat = parseFloat(latParam.replace(',', '.'));
+    const lng = parseFloat(lngParam.replace(',', '.'));
+    if (!isNaN(lat) && !isNaN(lng)) {
+      map.setCenter([lng, lat]);
+      map.setZoom(14);
+    }
+  }
+</script>
 </body>
 </html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <h1>Мои теги</h1>
+
+  {% if tags %}
+    <ul>
+      {% for tag in tags %}
+        <li>
+          <a href="{% url 'photos_by_tag' tag.name %}">{{ tag.name }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>У вас пока нет фотографий с тегами.</p>
+  {% endif %}
+</body>
+</html>

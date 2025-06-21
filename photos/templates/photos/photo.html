@@ -4,73 +4,133 @@
 <head>
   <meta charset="UTF-8">
   <title>{{ photo.name }}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    body {
+    html, body {
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', sans-serif;
+      height: 100%;
       background-color: #121212;
-      color: #eee;
-      padding: 0px;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      background-color: #1a1a1a;
+      padding: 8px 15px;
+      height: 50px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1000;
+    }
+
+    .nav-links {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      white-space: nowrap;
+      flex-grow: 1;
+      padding: 0 10px;
+    }
+
+    .nav-links::-webkit-scrollbar {
+      display: none;
+    }
+
+    .logo {
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 12px;
+      margin: 0 5px;
+      border-radius: 4px;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .nav-links a:hover {
+      background-color: #333;
+    }
+
+    .logout-button {
+      display: flex;
+      align-items: center;
+    }
+
+    .door-icon {
+      margin-right: 5px;
+    }
+
+    .photo-page-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 15px;
     }
 
     .photo-container {
-      max-width: 900px;
-      margin: 0 auto;
       background-color: #1a1a1a;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
       padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
     }
 
     .photo-image {
       width: 100%;
-      height: auto;
-      border-radius: 10px;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 8px;
       margin-bottom: 20px;
-      margin-top: 37px;
-      border: 1px solid #333;
+    }
+
+    .photo-details {
+      padding: 0 10px;
     }
 
     .photo-details p {
-      margin: 10px 0;
-      line-height: 1.6;
+      margin: 12px 0;
+      line-height: 1.5;
     }
 
     .photo-details strong {
       color: #ccc;
+      display: inline-block;
+      min-width: 120px;
     }
 
     .tags {
       display: flex;
       flex-wrap: wrap;
-      margin-top: 8px;
+      margin: 10px 0;
     }
 
     .tag {
       background-color: #2a2a2a;
       color: #ccc;
-      border: 1px solid #444;
       border-radius: 4px;
       padding: 4px 10px;
-      margin: 4px 6px 0 0;
+      margin: 0 6px 6px 0;
       font-size: 14px;
     }
 
-    button.user-link {
+    .user-link {
       color: #6699ff;
       text-decoration: none;
     }
 
-    button.user-link:hover {
+    .user-link:hover {
       text-decoration: underline;
     }
-    .photo-container {
-      position: relative;
-    }
 
-  .close-button-card {
+    .close-button-card {
       position: absolute;
       top: 12px;
       right: 12px;
@@ -79,7 +139,6 @@
       cursor: pointer;
       z-index: 10;
       padding: 4px;
-      text-decoration: none;
     }
 
     .close-icon {
@@ -91,18 +150,205 @@
       stroke: #fff;
     }
 
-    @media (max-width: 600px) {
-      body {
-        padding: 10px;
+    .comments-section {
+      background-color: #1a1a1a;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .comments-title {
+      font-size: 20px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #333;
+    }
+
+    .comment-form {
+      margin-bottom: 20px;
+    }
+
+    .comment-form textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      background-color: #2a2a2a;
+      border: 1px solid #333;
+      color: #fff;
+      resize: vertical;
+      min-height: 80px;
+      margin-bottom: 10px;
+    }
+
+    .comment-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .comment-button:hover {
+      background-color: #45a049;
+    }
+
+    .comment {
+      display: flex;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #333;
+    }
+
+    .comment:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 12px;
+    }
+
+    .comment-body {
+      flex-grow: 1;
+    }
+
+    .comment-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .comment-author {
+      color: #6699ff;
+      text-decoration: none;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .comment-date {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .comment-text {
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .photo-page-container {
+        padding: 15px 10px;
       }
 
+      .photo-container, .comments-section {
+        padding: 15px;
+      }
+
+      .photo-details strong {
+        min-width: 100px;
+      }
+
+      .navbar {
+        padding: 8px 10px;
+      }
+
+      .nav-links a {
+        padding: 6px 8px;
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .photo-image {
+        max-height: 60vh;
+      }
+
+      .photo-details p {
+        font-size: 14px;
+      }
+
+      .tag {
+        font-size: 12px;
+        padding: 3px 8px;
+      }
+
+      .comment {
+        flex-direction: column;
+      }
+
+      .avatar {
+        margin-bottom: 8px;
+      }
+    }
+  .report-button {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background-color: rgba(255, 77, 77, 0.1);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #ff4d4d;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    z-index: 5;
+  }
+
+  .report-button:hover {
+    background-color: rgba(255, 77, 77, 0.2);
+  }
+
+  .photo-container:hover .report-button {
+    opacity: 1;
+  }
+  .delete-button {
+    position: absolute;
+    bottom: 12px;
+    right: 165px;
+    background-color: rgba(255, 77, 77, 0.1);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #ff4d4d;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    z-index: 5;
+  }
+
+  .delete-button:hover {
+    background-color: rgba(255, 77, 77, 0.2);
+  }
+
+  .photo-container:hover .delete-button {
+    opacity: 1;
+  }
   </style>
-  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
 </head>
 <body>
+
 <nav class="navbar">
-  <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="40px" height="40px"></a>
+  <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="34px" height="34px"></a>
   <div class="nav-links">
+    {% if is_superuser %}
+      <a href="/moderation/">Панель модерации</a>
+    {% endif %}
     {% if request.user.is_authenticated %}
         <a href="/upload/">Загрузить фото</a>
     {% endif %}
@@ -110,7 +356,7 @@
     {% if request.user.is_authenticated %}
       <a href="/profile/">{{ request.user }}</a>
       <a href="/logout/" class="logout-button">
-        <svg xmlns="http://www.w3.org/2000/svg" class="door-icon" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="door-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M10 17l5-5-5-5" stroke="white"/>
         <path d="M4 12h11" stroke="white"/>
         <path d="M20 4v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2z" stroke="white"/>
@@ -122,36 +368,158 @@
     {% endif %}
   </div>
 </nav>
-  <div class="photo-container">
-    <form method="post">
-      {% csrf_token %}
-      <button type ='submit' class="close-button-card" title="Закрыть и вернуться на карту">
-        <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" viewBox="0 0 24 24" width="32" height="32" stroke="#ccc" fill="none" stroke-width="2.5">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </form>
 
-    <img src="{{ photo.image.url }}" alt="Фото" class="photo-image">
+<div class="photo-page-container">
+  <div class="photo-container">
+    <img src="{{ photo.image.url }}" alt="{{ photo.name|default:'Фото' }}" class="photo-image">
+    {% if is_superuser %}
+      <form method="post" action="{% url 'delete_photo_moderator' photo.id %}" class="delete-form">
+    {% csrf_token %}
+    <button type="submit" class="delete-button" title="Удалить фото">
+      <span>Удалить</span>
+    </button>
+      </form>
+    {% endif %}
+    {% if request.user.is_authenticated %}
+    <form method="post" action="{% url 'report_photo' photo.id %}" class="report-form">
+  {% csrf_token %}
+  <button type="button" onclick="openReportModal()" class="report-button" title="Пожаловаться">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ff4d4d" stroke-width="2" width="18" height="18">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c.89 0 1.337-1.077.707-1.707L13.414 4.586a1 1 0 00-1.414 0L4.374 17.293A1 1 0 005.08 19z"/>
+    </svg>
+    <span>Пожаловаться</span>
+  </button>
+</form>
+  {% endif %}
+
+    <a href="javascript:history.back()" class="close-button-card" title="Назад">
+      <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" viewBox="0 0 24 24" width="24" height="24" stroke="#ccc" fill="none" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </a>
+
+
 
     <div class="photo-details">
       <p><strong>Описание:</strong> {{ photo.description }}</p>
-      <p><strong>Дата съёмки:</strong> {{ photo.date_taken }}</p>
-      <p><strong>Координаты:</strong> {{ photo.latitude }}, {{ photo.longitude }}</p>
-      <p><strong>Добавил пользователь:</strong>
-        <a href="{% url 'public_profile' photo.add_id.id %}" class="user-link">{{ photo.add_id }}</a>
+      <p><strong>Дата съёмки:</strong> {{ photo.date_taken|date:"d.m.Y" }}</p>
+      <p><strong>Координаты:</strong> {{ photo.latitude|floatformat:4 }}, {{ photo.longitude|floatformat:4 }}</p>
+      <p><strong>Автор:</strong>
+        <a href="{% url 'public_profile' photo.add_id.id %}" class="user-link">{{ photo.add_id.username }}</a>
       </p>
 
-      {% if photo.tags.exists %}
-        <p><strong>Теги:</strong></p>
-        <div class="tags">
-          {% for tag in photo.tags.all %}
-            <div class="tag">{{ tag.name }}</div>
-          {% endfor %}
-        </div>
+      {% if request.user == photo.add_id or is_superuser %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="text" name="tag_name" placeholder="Введите тег" value="{{ photo.tag.name|default_if_none:'' }}" required>
+        <button type="submit">Сохранить тег</button>
+      </form>
+      {% endif %}
+
+      {% if photo.tag %}
+      <p>Текущий тег: <a href="{% url 'photos_by_tag' photo.tag.name %}">{{ photo.tag.name }}</a></p>
       {% endif %}
     </div>
   </div>
+  <div class="comments-section">
+    <h2 class="comments-title">Комментарии</h2>
+
+    {% if request.user.is_authenticated %}
+      <form method="post" class="comment-form">
+        {% csrf_token %}
+        <textarea name="text" placeholder="Оставьте ваш комментарий..." required></textarea>
+        <button type="submit" class="comment-button">Отправить</button>
+      </form>
+    {% else %}
+      <p><a href="{% url 'login' %}?next={{ request.path }}" class="user-link">Войдите</a>, чтобы оставить комментарий.</p>
+    {% endif %}
+
+    {% for comment in comments %}
+      <div class="comment">
+        <img src="{{ comment.user.profile.avatar.url }}" alt="Аватар" class="avatar">
+        <div class="comment-body">
+          <div class="comment-header">
+            <a href="{% url 'public_profile' comment.user.id %}" class="comment-author">
+              {{ comment.user.username }}
+            </a>
+            <span class="comment-date">{{ comment.created_at|date:"d.m.Y H:i" }}</span>
+
+            {% if request.user == comment.user or is_superuser %}
+              <div class="comment-actions" style="margin-left: auto;">
+                <button onclick="openEditModal({{ comment.id }}, '{{ comment.text|escapejs }}')" style="padding: 4px 8px; background-color: #2a2a2a; border: none; border-radius: 4px; color: #ccc; cursor: pointer;" onmouseover="this.style.backgroundColor='#333'" onmouseout="this.style.backgroundColor='#2a2a2a'">✏️</button>
+
+                <a href="{% url 'delete_comment' comment.id %}" onclick="return confirm('Удалить комментарий?')">🗑️</a>
+              </div>
+            {% endif %}
+          </div>
+          <p class="comment-text" id="comment-text-{{ comment.id }}">{{ comment.text }}</p>
+        </div>
+      </div>
+    {% empty %}
+      <p style="color: #888;">Комментариев пока нет.</p>
+    {% endfor %}
+  </div>
+</div>
+<div id="reportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background-color: rgba(0, 0, 0, 0.6); justify-content:center; align-items:center; z-index:2000;">
+  <div style="background-color:#1a1a1a; padding:20px; border-radius:10px; width:90%; max-width:400px; color:#fff;">
+    <h3 style="margin-top:0;">Пожаловаться на фото</h3>
+    <form method="post" action="{% url 'report_photo' photo.id %}">
+      {% csrf_token %}
+      Причина:<br>
+      {{ report_form.reason }}
+      <div style="margin-top:16px;">
+        <button type="submit" class="comment-button" style="background-color:#ff4d4d;">Отправить жалобу</button>
+        <button type="button" onclick="closeReportModal()" style="margin-left:10px; background:transparent; color:#ccc; border:none; cursor:pointer;">
+          Отмена
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background-color: rgba(0, 0, 0, 0.6); justify-content:center; align-items:center; z-index:2000;">
+  <div style="background-color:#1a1a1a; padding:20px; border-radius:10px; width:90%; max-width:400px; color:#fff;">
+    <h3 style="margin-top:0;">Редактировать комментарий</h3>
+    <form id="editForm" method="post">
+      {% csrf_token %}
+      <textarea name="text" id="editCommentText" rows="4"
+        style="width:100%; background-color:#2a2a2a; color:#fff; border:1px solid #444; border-radius:6px; padding:10px;" required></textarea>
+      <input type="hidden" name="comment_id" id="editCommentId">
+      <div style="margin-top:16px;">
+        <button type="submit" class="comment-button">Сохранить</button>
+        <button type="button" onclick="closeEditModal()" style="margin-left:10px; background:transparent; color:#ccc; border:none; cursor:pointer;">
+          Отмена
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  function openReportModal() {
+    document.getElementById('reportModal').style.display = 'flex';
+  }
+
+  function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+  }
+
+  // Закрытие по ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeReportModal();
+    }
+  });
+  function openEditModal(commentId, commentText) {
+    document.getElementById('editCommentId').value = commentId;
+    document.getElementById('editCommentText').value = commentText;
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+  }
+</script>
 </body>
 </html>

@@ -1,0 +1,172 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Панель модерации</title>
+  <style>
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .photo-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #2a2a2a;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .photo-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .photo-info img {
+      width: 120px;
+      height: auto;
+      border-radius: 8px;
+      margin-right: 20px;
+    }
+
+    .photo-details {
+      max-width: 500px;
+    }
+
+    .photo-details strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #ccc;
+    }
+
+    .action-buttons a {
+      background-color: #444;
+      color: #fff;
+      padding: 8px 12px;
+      margin-left: 8px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    .action-buttons a:hover {
+      background-color: #666;
+    }
+
+    .no-photos {
+      color: #999;
+      text-align: center;
+    }
+
+    ::selection {
+      background: #00bcd4;
+      color: #000;
+    }
+ body {
+  margin: 0;
+  padding: 0;
+  background-color: #121212;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 30vh;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #1e1e1e;
+  padding: 10px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-top: 9px;
+  padding-bottom: 20px;
+}
+
+.container {
+  max-width: 900px;
+  width: 100%;
+  background-color: #1e1e1e;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+  </style>
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+</head>
+<body>
+<nav class="navbar">
+  <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="40px" height="40px"></a>
+  <div class="nav-links">
+    {% if is_superuser %}
+      <a href="/moderation/">Панель модерации</a>
+    {% endif %}
+      {% if request.user.is_authenticated %}
+        <a href="/upload/">Загрузить фото</a>
+      {% endif %}
+    <a href="/gallery/">Галерея</a>
+    {% if request.user.is_authenticated %}
+      <a href="/profile/">{{ request.user }}</a>
+      <a href="/logout/" class="logout-button">
+        <svg xmlns="http://www.w3.org/2000/svg" class="door-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10 17l5-5-5-5" stroke="white"/>
+        <path d="M4 12h11" stroke="white"/>
+        <path d="M20 4v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2z" stroke="white"/>
+        </svg>
+        Выход
+      </a>
+    {% else %}
+      <a href="/login/">Войти</a>
+    {% endif %}
+  </div>
+</nav>
+<main>
+<div class="container">
+  <h2>Панель модерации</h2>
+
+  {% if photos %}
+    {% for photo in photos %}
+      <div class="photo-card">
+        <div class="photo-info">
+          <a href="/photo/{{ photo.id }}" target="_blank">
+            <img src="{{ photo.image.url }}" alt="Фото">
+          </a>
+          <div class="photo-details">
+            <strong>Причина:</strong> {{ photo.get_reported_at_display }}<br>
+            <strong>Название:</strong> {{ photo.name }}<br>
+            <strong>Автор:</strong> {{ photo.add_id.username }}<br>
+            <strong>Дата:</strong> {{ photo.date_taken|date:"d.m.Y" }}
+          </div>
+        </div>
+        <div class="action-buttons">
+          <a href="{% url 'edit_photo_moderator' photo.id %}">✏️ Изменить</a>
+          <a href="{% url 'delete_photo_moderator' photo.id %}" onclick="return confirm('Удалить фото?')">🗑️ Удалить</a><form method="post" style="margin-top: 20px;">
+        <a href="{% url 'demote_photo' photo.id %}" style="background-color: #ff4d4d; color: white; padding: 10px 18px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">Разжаловать фото</a>
+        </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="no-photos">Нет фотографий, отмеченных как нарушающие.</p>
+  {% endif %}
+</div>
+</main>
+</body>
+</html>
