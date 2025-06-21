@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
+#для старта вести команды
+#  cd map4ya
+#  python manage.py runserver
+# или    python manage.py runserver 0.0.0.0:8000
+"""Django's command-line utility for administrative tasks.
+    Командная строка Django для выполнения административных задач."""
 import os
 import sys
 

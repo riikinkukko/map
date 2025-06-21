@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-05xb$h*hy#c29-=an3cv=z1e8mh810x5t(=g9u$o_o&3!p^5@9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+#ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.2', '*']
 
 # Application definition
 
@@ -75,10 +75,18 @@ WSGI_APPLICATION = 'pastvu.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'db',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
 }
 
@@ -127,3 +135,30 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+'''
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_HOST = 'smtp.yandex.ru'
+#EMAIL_PORT = 465
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+#EMAIL_HOST_USER = 'pixxpoint@yandex.ru'
+#EMAIL_HOST_PASSWORD = 'Пароль'
+#DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'pixxpoints@gmail.com'
+EMAIL_HOST_PASSWORD = 'Пароль'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+'''
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'globalnoagain@gmail.com'
+EMAIL_HOST_PASSWORD = 'cisg yoyi awvf dcgc'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+MODERATOR_IDS = [6]
