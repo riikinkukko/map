@@ -10,7 +10,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 import sys
 from django.utils import timezone
 from datetime import timedelta
-
+import os
+from datetime import date
 
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -18,10 +19,19 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+def upload_to_dynamic(instance, filename):
+    ext = filename.split('.')[-1]
+
+    year = instance.date_taken.year if instance.date_taken else date.today().year
+
+    # Выбираем папку
+    folder = 'photos_old' if year < 2000 else 'photos_new'
+
+    return os.path.join(folder, filename)
 
 class Photo(models.Model):
     name = models.TextField(null=True)
-    image = models.ImageField(upload_to='photos/')
+    image = models.ImageField(upload_to=upload_to_dynamic)
     description = models.TextField()
     date_taken = models.DateField()
     latitude = models.FloatField()
@@ -80,6 +90,7 @@ class Photo(models.Model):
         super().save(*args, **kwargs)
 
 
+
 class Profile(models.Model):
     GENDER_CHOICES = [
         ('', 'Не указан'),
@@ -89,7 +100,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     avatar = models.ImageField(
         upload_to='avatars/',
-        default='avatars/default_avatar.png',
+        default='avatars/default_avatar.jpg',
         validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])]
     )
     real_name = models.CharField(max_length=100, blank=True)
@@ -126,7 +137,7 @@ class Profile(models.Model):
 
     def save(self, *args, **kwargs):
         # Сжимаем новую аватарку если нужно
-        if self.avatar and self.avatar.name != 'avatars/default_avatar.png':
+        if self.avatar and self.avatar.name != 'avatars/default_avatar.jpg':
             if hasattr(self.avatar, 'file'):
                 self.avatar = self.compress_avatar(self.avatar)
 
@@ -134,7 +145,7 @@ class Profile(models.Model):
         try:
             old_profile = Profile.objects.get(pk=self.pk)
             if old_profile.avatar and old_profile.avatar != self.avatar:
-                if old_profile.avatar.name != 'avatars/default_avatar.png':
+                if old_profile.avatar.name != 'avatars/default_avatar.jpg':
                     old_path = old_profile.avatar.path
                     if os.path.exists(old_path):
                         os.remove(old_path)
@@ -144,7 +155,7 @@ class Profile(models.Model):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        if self.avatar.name != 'avatars/default_avatar.png':
+        if self.avatar.name != 'avatars/default_avatar.jpg':
             if os.path.exists(self.avatar.path):
                 os.remove(self.avatar.path)
         super().delete(*args, **kwargs)

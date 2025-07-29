@@ -6,160 +6,265 @@
     <title>Загрузка фото</title>
     <link rel="stylesheet" href="{% static 'css/upload.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+    <style>
+        /* Стили навигационной панели */
+        .navbar {
+            display: flex;
+            align-items: center;
+            background-color: #1a1a1a;
+            padding: 8px 15px;
+            height: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .nav-links {
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            white-space: nowrap;
+            flex-grow: 1;
+            padding: 0 10px;
+        }
+
+        .nav-links::-webkit-scrollbar {
+            display: none;
+        }
+
+        .logo {
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            margin: 0 5px;
+            border-radius: 4px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .nav-links a:hover {
+            background-color: #333;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .user-section a {
+            color: white;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .logout-button {
+            display: flex;
+            align-items: center;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .logout-button:hover {
+            background-color: #333;
+        }
+
+        .door-icon {
+            margin-right: 5px;
+        }
+
+        /* Адаптация для мобильных */
+        @media (max-width: 768px) {
+            .user-section {
+                display: none;
+            }
+
+            .nav-links a.user-link {
+                display: inline-block;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .nav-links a.user-link {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-  <nav class="navbar">
-  <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="40px" height="40px"></a>
-  <div class="nav-links">
-      {% if is_superuser %}
-      <a href="/moderation/">Панель модерации</a>
-    {% endif %}
-      {% if request.user.is_authenticated %}
-        <a href="/upload/">Загрузить фото</a>
-      {% endif %}
-    <a href="/gallery/">Галерея</a>
-    {% if request.user.is_authenticated %}
-      <a href="/profile/">{{ request.user }}</a>
-      <a href="/logout/" class="logout-button">
-        <svg xmlns="http://www.w3.org/2000/svg" class="door-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M10 17l5-5-5-5" stroke="white"/>
-        <path d="M4 12h11" stroke="white"/>
-        <path d="M20 4v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2z" stroke="white"/>
-        </svg>
-        Выход
-      </a>
-    {% else %}
-      <a href="/login/">Войти</a>
-    {% endif %}
-  </div>
-</nav>
+    <nav class="navbar">
+        <a class="logo" href="/"><img src="{% static 'img/LOGOPIXX.jpg' %}" width="34px" height="34px"></a>
+        <div class="nav-links">
+            {% if is_superuser %}
+                <a href="/moderation/">Панель модерации</a>
+            {% endif %}
+            {% if request.user.is_authenticated %}
+                <a href="/upload/">Загрузить фото</a>
+            {% endif %}
+            <a href="/gallery/">Галерея</a>
+            {% if request.user.is_authenticated %}
+                <a href="/profile/" class="user-link">{{ request.user }}</a>
+                <a href="/logout/" class="user-link">Выход</a>
+            {% else %}
+                <a href="/login/" class="user-link">Войти</a>
+            {% endif %}
+        </div>
+        {% if request.user.is_authenticated %}
+        <div class="user-section">
+            <a href="/profile/">{{ request.user }}</a>
+            <button class="logout-button" onclick="window.location.href='/logout/'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="door-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10 17l5-5-5-5" stroke="white"/>
+                    <path d="M4 12h11" stroke="white"/>
+                    <path d="M20 4v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2z" stroke="white"/>
+                </svg>
+                Выход
+            </button>
+        </div>
+        {% else %}
+            <a href="/login/" class="user-section">Войти</a>
+        {% endif %}
+    </nav>
 
-
-<div class="upload-container">
-    <h1>Загрузка фотографии</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="{{ form.name.id_for_label }}">Название</label>
-            <input type="text" name="name" id="{{ form.name.id_for_label }}" value="{{ form.name.value|default:'' }}" style="width: 60%; padding: 10px; border-radius: 6px; background-color: #2a2a2a; border: none; color: #fff;">
-        </div>
-        <div class="form-group">
-            <label for="{{ form.image.id_for_label }}">Изображение</label>
-            {{ form.image }}
-        </div>
-        <div class="form-group">
-            <label for="{{ form.description.id_for_label }}">Описание</label>
-            {{ form.description }}
-        </div>
-        <div class="form-group">
-            <label for="{{ form.date_taken.id_for_label }}">Дата съёмки</label>
-            {{ form.date_taken }}
-        </div>
-        <div class="form-group">
-            <label for="{{ form.latitude.id_for_label }}">Координаты</label>
-            <div style="display: flex; gap: 12px;">
-                <input type="number" step="any" name="latitude" id="{{ form.latitude.id_for_label }}" value="{{ form.latitude.value|default:'' }}" placeholder="Широта"
-                style="width: 48%; padding: 10px; border-radius: 6px; background-color: #2a2a2a; border: none; color: #fff;">
-                <input type="number" step="any" name="longitude" id="{{ form.longitude.id_for_label }}" value="{{ form.longitude.value|default:'' }}" placeholder="Долгота"
-               style="width: 48%; padding: 10px; border-radius: 6px; background-color: #2a2a2a; border: none; color: #fff;">
+    <div class="upload-container">
+        <h1>Загрузка фотографии</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">Название</label>
+                <input type="text" name="name" id="{{ form.name.id_for_label }}" value="{{ form.name.value|default:'' }}" style="width: 60%; padding: 10px; border-radius: 6px; background-color: #2a2a2a; border: none; color: #fff;">
             </div>
-        </div>
-        <button type="submit">Загрузить</button>
-    </form>
+            <div class="form-group">
+                <label for="{{ form.image.id_for_label }}">Изображение</label>
+                {{ form.image }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Описание</label>
+                {{ form.description }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.date_taken.id_for_label }}">Дата съёмки</label>
+                {{ form.date_taken }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.latitude.id_for_label }}">Координаты</label>
+                <div style="display: flex; gap: 12px;">
+                    <input type="number" step="any" name="latitude" id="{{ form.latitude.id_for_label }}" value="{{ form.latitude.value|default:'' }}" placeholder="Широта"
+                    style="width: 48%; padding: 10px; border-radius: 6px; background-color: #2a2a2a; border: none; color: #fff;">
+                    <input type="number" step="any" name="longitude" id="{{ form.longitude.id_for_label }}" value="{{ form.longitude.value|default:'' }}" placeholder="Долгота"
+                   style="width: 48%; padding: 10px; border-radius: 6px; background-color: #2a2a2a; border: none; color: #fff;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="{{ form.tag.id_for_label }}">Добавить событие</label>
+                {{ form.tag }}
+            </div>
+            <button type="submit">Загрузить</button>
+        </form>
 
-  <script>
-  const field1 = document.getElementById('field1');
-  const field2 = document.getElementById('field2');
+        <script>
+        const field1 = document.getElementById('field1');
+        const field2 = document.getElementById('field2');
 
-  field1.addEventListener('paste', function(event) {
-    event.preventDefault();
+        field1.addEventListener('paste', function(event) {
+            event.preventDefault();
 
-    const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+            const pastedText = (event.clipboardData || window.clipboardData).getData('text');
 
-    const parts = pastedText.split(', ');
+            const parts = pastedText.split(', ');
 
-    field1.value = parts[0] || '';
-    field2.value = parts[1] || '';
-  });
-
-  document.addEventListener('DOMContentLoaded', function () {
-  const imageInput = document.getElementById('id_image');
-  const latField = document.getElementById('field1');
-  const lonField = document.getElementById('field2');
-  const dateField = document.getElementById('id_date_taken');
-
-  imageInput.addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const img = new Image();
-      img.onload = function () {
-        EXIF.getData(img, function () {
-          // Широта и долгота
-          const lat = EXIF.getTag(this, "GPSLatitude");
-          const latRef = EXIF.getTag(this, "GPSLatitudeRef");
-          const lon = EXIF.getTag(this, "GPSLongitude");
-          const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
-
-          if (lat && latRef && lon && lonRef) {
-            const latitude = convertDMSToDD(lat, latRef);
-            const longitude = convertDMSToDD(lon, lonRef);
-            latField.value = latitude.toFixed(6);
-            lonField.value = longitude.toFixed(6);
-          }
-
-          // Дата съёмки
-          const dateOriginal = EXIF.getTag(this, "DateTimeOriginal");
-          if (dateOriginal) {
-            const formattedDate = formatExifDate(dateOriginal);
-            if (formattedDate) {
-              dateField.value = formattedDate; // YYYY-MM-DD
-            }
-          }
+            field1.value = parts[0] || '';
+            field2.value = parts[1] || '';
         });
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
 
-  function convertDMSToDD(dms, ref) {
-    const degrees = dms[0];
-    const minutes = dms[1];
-    const seconds = dms[2];
-    let dd = degrees + minutes / 60 + seconds / 3600;
-    if (ref === "S" || ref === "W") dd = -dd;
-    return dd;
-  }
+        document.addEventListener('DOMContentLoaded', function () {
+        const imageInput = document.getElementById('id_image');
+        const latField = document.getElementById('field1');
+        const lonField = document.getElementById('field2');
+        const dateField = document.getElementById('id_date_taken');
 
-  function formatExifDate(dateStr) {
-    // EXIF формат: "YYYY:MM:DD HH:MM:SS"
-    const parts = dateStr.split(" ")[0].split(":");
-    if (parts.length === 3) {
-      return `${parts[0]}-${parts[1]}-${parts[2]}`;  // YYYY-MM-DD
-    }
-    return null;
-  }
-});
-      document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const lat = urlParams.get('lat');
-    const lng = urlParams.get('lng');
+        imageInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
 
-    if (lat && lng) {
-      const latInput = document.getElementById('{{ form.latitude.id_for_label }}');
-      const lngInput = document.getElementById('{{ form.longitude.id_for_label }}');
+            const reader = new FileReader();
+            reader.onload = function (e) {
+            const img = new Image();
+            img.onload = function () {
+                EXIF.getData(img, function () {
+                // Широта и долгота
+                const lat = EXIF.getTag(this, "GPSLatitude");
+                const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+                const lon = EXIF.getTag(this, "GPSLongitude");
+                const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-      if (latInput) latInput.value = lat;
-      if (lngInput) lngInput.value = lng;
-    }
-  });
-</script>
-</div>
+                if (lat && latRef && lon && lonRef) {
+                    const latitude = convertDMSToDD(lat, latRef);
+                    const longitude = convertDMSToDD(lon, lonRef);
+                    latField.value = latitude.toFixed(6);
+                    lonField.value = longitude.toFixed(6);
+                }
 
+                // Дата съёмки
+                const dateOriginal = EXIF.getTag(this, "DateTimeOriginal");
+                if (dateOriginal) {
+                    const formattedDate = formatExifDate(dateOriginal);
+                    if (formattedDate) {
+                    dateField.value = formattedDate; // YYYY-MM-DD
+                    }
+                }
+                });
+            };
+            img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function convertDMSToDD(dms, ref) {
+            const degrees = dms[0];
+            const minutes = dms[1];
+            const seconds = dms[2];
+            let dd = degrees + minutes / 60 + seconds / 3600;
+            if (ref === "S" || ref === "W") dd = -dd;
+            return dd;
+        }
+
+        function formatExifDate(dateStr) {
+            // EXIF формат: "YYYY:MM:DD HH:MM:SS"
+            const parts = dateStr.split(" ")[0].split(":");
+            if (parts.length === 3) {
+            return `${parts[0]}-${parts[1]}-${parts[2]}`;  // YYYY-MM-DD
+            }
+            return null;
+        }
+        });
+            document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const lat = urlParams.get('lat');
+            const lng = urlParams.get('lng');
+
+            if (lat && lng) {
+            const latInput = document.getElementById('{{ form.latitude.id_for_label }}');
+            const lngInput = document.getElementById('{{ form.longitude.id_for_label }}');
+
+            if (latInput) latInput.value = lat;
+            if (lngInput) lngInput.value = lng;
+            }
+        });
+        </script>
+    </div>
 </body>
 </html>

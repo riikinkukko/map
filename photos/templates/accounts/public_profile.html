@@ -142,7 +142,7 @@
     <div class="sidebar">
       <img src="{{ user_profile.profile.avatar.url|default:'/default_avatar.png' }}" alt="Аватар">
       <div class="username">{{ user_profile.username }}</div>
-      <div class="stat">ID: {{ user.id }}</div>
+      <div class="stat">ID: {{ profile.id }}</div>
       <div class="stat">Зарегистрирован: {{ user_profile.date_joined|date:"d M Y" }}</div>
     </div>
 

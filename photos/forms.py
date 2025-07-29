@@ -30,12 +30,13 @@ class RegisterForm(forms.ModelForm):
 class PhotoForm(forms.ModelForm):
     class Meta:
         model = Photo
-        fields = ['name', 'image', 'description', 'date_taken', 'latitude', 'longitude']
+        fields = ['name', 'image', 'description', 'date_taken', 'latitude', 'longitude', 'tag']
 
         widgets = {
             'date_taken': forms.DateInput(attrs={'type': 'date'}),
             'latitude' : forms.NumberInput(attrs={'id': 'field1'}),
             'longitude': forms.NumberInput(attrs={'id': 'field2'}),
+            'tag': forms.TextInput(attrs={'type': 'text'}),
         }
 
 class PhotoEditForm(forms.ModelForm):

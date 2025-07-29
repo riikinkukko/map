@@ -89,6 +89,7 @@
       object-fit: contain;
       border-radius: 8px;
       margin-bottom: 20px;
+      cursor: pointer;
     }
 
     .photo-details {
@@ -409,16 +410,16 @@
         <a href="{% url 'public_profile' photo.add_id.id %}" class="user-link">{{ photo.add_id.username }}</a>
       </p>
 
-      {% if request.user == photo.add_id or is_superuser %}
+      {% if request.user.id == photo.add_id or is_superuser %}
       <form method="post">
         {% csrf_token %}
-        <input type="text" name="tag_name" placeholder="Введите тег" value="{{ photo.tag.name|default_if_none:'' }}" required>
-        <button type="submit">Сохранить тег</button>
+        <input type="text" name="tag_name" placeholder="Введите событие" value="{{ photo.tag.name|default_if_none:'' }}" required>
+        <button type="submit">Добавить событие</button>
       </form>
-      {% endif %}
 
       {% if photo.tag %}
-      <p>Текущий тег: <a href="{% url 'photos_by_tag' photo.tag.name %}">{{ photo.tag.name }}</a></p>
+      <p>Текущее событие: {{ photo.tag.name }}</p>
+      {% endif %}
       {% endif %}
     </div>
   </div>
@@ -460,6 +461,24 @@
       <p style="color: #888;">Комментариев пока нет.</p>
     {% endfor %}
   </div>
+</div>
+<div id="fullscreenModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background-color: rgba(0, 0, 0, 0.95); justify-content:center; align-items:center; z-index:3000;">
+  <img id="fullscreenImage" src="" alt="Фото" style="max-width:95%; max-height:95%; object-fit:contain; cursor: zoom-in;">
+  <button onclick="closeFullscreen()" style="
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 3100;
+">
+  <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" viewBox="0 0 24 24" width="32" height="32" stroke="#ccc" fill="none" stroke-width="2.5">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+</button>
 </div>
 <div id="reportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
   background-color: rgba(0, 0, 0, 0.6); justify-content:center; align-items:center; z-index:2000;">
@@ -520,6 +539,55 @@
   function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
   }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const lat = urlParams.get('lat');
+    const lng = urlParams.get('lng');
+
+    if (lat && lng) {
+      const latInput = document.getElementById('{{ form.latitude.id_for_label }}');
+      const lngInput = document.getElementById('{{ form.longitude.id_for_label }}');
+
+      if (latInput) latInput.value = lat;
+      if (lngInput) lngInput.value = lng;
+    }
+  });
+</script>
+<script>
+  const modal = document.getElementById("fullscreenModal");
+  const fullscreenImg = document.getElementById("fullscreenImage");
+  let zoomed = false;
+
+  document.querySelector(".photo-image").addEventListener("click", function () {
+    fullscreenImg.src = this.src;
+    modal.style.display = "flex";
+    zoomed = false;
+    fullscreenImg.style.transform = "scale(1)";
+    fullscreenImg.style.cursor = "zoom-in";
+  });
+
+  fullscreenImg.addEventListener("click", function () {
+    zoomed = !zoomed;
+    this.style.transform = zoomed ? "scale(2)" : "scale(1)";
+    this.style.cursor = zoomed ? "zoom-out" : "zoom-in";
+  });
+
+  // Закрыть модал по клику вне изображения или по ESC
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      modal.style.display = "none";
+    }
+  });
+  function closeFullscreen() {
+  document.getElementById('fullscreenModal').style.display = 'none';
+}
 </script>
 </body>
 </html>

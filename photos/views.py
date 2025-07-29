@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework import status
 from django.views.generic import TemplateView
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from pastvu.settings import MODERATOR_IDS
 from .decorators import moderator_required
 from .serializers import PhotoSerializer
@@ -15,7 +14,6 @@ from .models import Photo, Tag, Comment, Profile, TagMergeRequest, TagGroup
 from .forms import PhotoForm, RegisterForm, PhotoEditForm
 from django.contrib.auth.decorators import login_required
 from django.utils.text import slugify
-from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.core.mail import send_mail
 from django.urls import reverse
@@ -29,7 +27,6 @@ from django.conf import settings
 from .forms import CommentForm
 from django.core.mail import EmailMessage
 from django.db.models import Min, Max
-from datetime import datetime
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from .models import LoginAttempt
@@ -37,17 +34,37 @@ from django.utils import timezone
 from datetime import timedelta
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.core.mail import EmailMessage
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.template.loader import render_to_string
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from threading import Thread
+from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from django.db.models import Count, Avg, F, IntegerField
+from django.db.models.functions import Cast
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 
 MODERATOR_IDS = settings.MODERATOR_IDS
 
 @login_required
 def upload_photo(request):
-    if request.user.is_authenticated and (request.user.is_superuser or request.user.id in getattr(settings, "MODERATOR_IDS", [])):
-        is_superuser = True
-    else:
-        is_superuser = False
+    is_superuser = request.user.is_superuser or request.user.id in getattr(settings, "MODERATOR_IDS", [])
+
     if request.method == 'POST':
-        form = PhotoForm(request.POST, request.FILES)
+        post_data = request.POST.copy()
+
+        tag_name = post_data.get('tag')
+        if tag_name:
+            tag_obj, _ = Tag.objects.get_or_create(name=tag_name)
+            post_data['tag'] = tag_obj.id
+
+        form = PhotoForm(post_data, request.FILES)
         if form.is_valid():
             photo = form.save(commit=False)
             photo.add_id = request.user
@@ -56,11 +73,13 @@ def upload_photo(request):
             return HttpResponseRedirect(f"{reverse('map')}?lat={photo.latitude}&lng={photo.longitude}")
     else:
         form = PhotoForm()
-    return render(request, 'photos/upload.html',
-                  {'form': form,
-                            'is_superuser': is_superuser,})
 
+    return render(request, 'photos/upload.html', {
+        'form': form,
+        'is_superuser': is_superuser,
+    })
 
+@method_decorator(ratelimit(key='ip', rate='1000/d', block=True), name='dispatch')
 class MapView(TemplateView):
     template_name = 'photos/map.html'
 
@@ -68,6 +87,84 @@ class MapView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['is_superuser'] = True if self.request.user.is_authenticated and (self.request.user.is_superuser or self.request.user.id in getattr(settings, "MODERATOR_IDS", [])) else False
         return context
+
+
+@method_decorator(cache_page(60*5), name='dispatch')
+class ClusteredPhotoView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            xmin = float(request.GET.get('xmin'))
+            xmax = float(request.GET.get('xmax'))
+            ymin = float(request.GET.get('ymin'))
+            ymax = float(request.GET.get('ymax'))
+            zoom = int(request.GET.get('zoom'))
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid or missing coordinates/zoom"}, status=400)
+
+        year = request.GET.get('year')
+        tag = request.GET.get('tag')
+
+        photos = Photo.objects.filter(
+            latitude__gte=ymin, latitude__lte=ymax,
+            longitude__gte=xmin, longitude__lte=xmax
+        )
+
+        if year:
+            photos = photos.filter(date_taken__year=year)
+
+        if tag:
+            photos = photos.filter(tag__name=tag)
+
+        grid_size = self._get_grid_size(zoom)
+
+        clusters = photos.annotate(
+            lat_bin=Cast(F('latitude') / grid_size, IntegerField()),
+            lon_bin=Cast(F('longitude') / grid_size, IntegerField())
+        ).values('lat_bin', 'lon_bin').annotate(
+            count=Count('id'),
+            avg_lat=Avg('latitude'),
+            avg_lon=Avg('longitude')
+        )
+
+        result = []
+        for c in clusters:
+            result.append({
+                "type": "cluster" if c['count'] > 1 else "point",
+                "coordinates": [c['avg_lon'], c['avg_lat']],
+                "count": c['count']
+            })
+
+        return JsonResponse({
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": cluster["coordinates"]
+                    },
+                    "properties": {
+                        "count": cluster["count"],
+                        "type": cluster["type"]
+                    }
+                }
+                for cluster in result
+            ]
+        })
+
+    def _get_grid_size(self, zoom):
+        if zoom <= 5:
+            return 1.0
+        elif zoom <= 8:
+            return 0.5
+        elif zoom <= 10:
+            return 0.2
+        elif zoom <= 12:
+            return 0.1
+        elif zoom <= 14:
+            return 0.05
+        else:
+            return 0.01
 
 class PhotoView(APIView):
     def get(self, request, *args, **kwargs):
@@ -228,6 +325,7 @@ def tag_group_photos(request, tag_name):
         'photos': photos,
     })
 
+
 def join_tag_group(user, tag, target_group):
     user_group = TagGroup.objects.filter(tag=tag, members=user).first()
 
@@ -254,8 +352,26 @@ def report_photo(request, photo_id):
         photo.save()
     return redirect('view_photo', photo_id=photo.id)
 
+def send_activation_email(user, request):
+    current_site = get_current_site(request)
+    mail_subject = 'Активация аккаунта'
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    activation_link = f"http://{current_site.domain}/activate/{uid}/{token}/"
+
+    message = render_to_string('emails/activation_email.html', {
+        'user': user,
+        'activation_link': activation_link,
+    })
+
+    email = EmailMessage(mail_subject, message, to=[user.email])
+    email.content_subtype = 'html'
+    email.send()
+
 
 def register(request):
+    expiration_time = timezone.now() - timedelta(minutes=10)
+    User.objects.filter(is_active=False, date_joined__lt=expiration_time).delete()
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -264,26 +380,12 @@ def register(request):
             user.is_active = False
             user.save()
 
-            current_site = get_current_site(request)
-            mail_subject = 'Активация аккаунта'
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            activation_link = f"http://{current_site.domain}/activate/{uid}/{token}/"
-
-            message = render_to_string('emails/activation_email.html', {
-                'user': user,
-                'activation_link': activation_link,
-            })
-
-            email = EmailMessage(mail_subject, message, to=[user.email])
-            email.content_subtype = 'html'
-            email.send()
+            Thread(target=send_activation_email, args=(user, request)).start()
 
             return render(request, 'accounts/registration/confirmation_sent.html')
     else:
         form = RegisterForm()
     return render(request, 'accounts/register.html', {'form': form})
-
 
 def activate_account(request, uidb64, token):
     try:
@@ -305,7 +407,7 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-
+        print(username, password)
         attempt, _ = LoginAttempt.objects.get_or_create(username=username)
 
         if attempt.is_blocked():
@@ -353,6 +455,15 @@ class PhotoGeoJSONView(APIView):
             photos = photos.filter(tag__name=tag)
             print(tag)
 
+        bbox = request.GET.get('bbox')
+        if bbox:
+            try:
+                lat1, lon1, lat2, lon2 = map(float, bbox.split(','))
+                photos = photos.filter(latitude__gte=min(lat1, lat2), latitude__lte=max(lat1, lat2),
+                                       longitude__gte=min(lon1, lon2), longitude__lte=max(lon1, lon2))
+            except ValueError:
+                return JsonResponse({"error": "Invalid bbox"}, status=400)
+
         features = []
         for photo in photos:
             if photo.latitude is None or photo.longitude is None:
@@ -368,7 +479,7 @@ class PhotoGeoJSONView(APIView):
                     "id": str(photo.id),
                     "image": request.build_absolute_uri(photo.image.url),
                     "date_taken": photo.date_taken.strftime("%Y-%m-%d"),
-                    "tag": tag,
+                    "tag": photo.tag.name if photo.tag else None,
                 }
             })
 
@@ -378,7 +489,6 @@ class PhotoGeoJSONView(APIView):
         }
 
         return JsonResponse(geojson)
-
 
 
 @api_view(['GET'])
@@ -392,6 +502,7 @@ def user_tags(request):
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 def photo_year_range(request):
     """Возвращает минимальный и максимальный год из базы данных"""
@@ -450,21 +561,26 @@ def public_profile_view(request, user_id):
 })
 
 
-def gallery_view(request):
-    year = request.GET.get('year')
+def gallery_api(request):
+    page_number = int(request.GET.get('page', 1))
     images = Photo.objects.all().order_by('-id')
+    paginator = Paginator(images, 16)
+    page_obj = paginator.get_page(page_number)
 
-    if request.user.is_authenticated and (request.user.is_superuser or request.user.id in getattr(settings, "MODERATOR_IDS", [])):
-        is_superuser = True
-    else:
-        is_superuser = False
+    html = render_to_string('partials/gallery_items.html', {'images': page_obj})
 
-    if year:
-        images = images.filter(date_taken__year=year)
+    return JsonResponse({
+        'html': html,
+        'has_next': page_obj.has_next()
+    })
+
+
+def gallery_view(request):
+    is_superuser = request.user.is_authenticated and (
+        request.user.is_superuser or request.user.id in getattr(settings, "MODERATOR_IDS", [])
+    )
 
     return render(request, 'photos/gallery.html', {
-        'images': images,
-        'selected_year': year,
         'is_superuser': is_superuser,
     })
 
@@ -496,16 +612,13 @@ def edit_photo_view(request, photo_id):
         photo.description = request.POST.get('description')
         photo.date_taken = request.POST.get('date_taken')
 
-        tag_names = request.POST.get('tags', '').split(',')
-        tags = []
-        for tag_name in tag_names:
-            tag_name = tag_name.strip()
-            if tag_name:
-                tag, created = Tag.objects.get_or_create(name=tag_name)
-                tags.append(tag)
+        tag_name = request.POST.get('tag')
+
+        if tag_name:
+            photo.tag = photo.name = request.POST.get('tag')
 
         photo.save()
-        photo.tags.set(tags)
+
         return redirect('my_photos')
 
     return redirect('my_photos')

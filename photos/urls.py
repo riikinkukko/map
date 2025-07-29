@@ -1,18 +1,19 @@
 from django.urls import path
 from . import views
-from .views import PhotoView, MapView, PhotoGeoJSONView
+from .views import PhotoView, MapView, PhotoGeoJSONView, ClusteredPhotoView
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', MapView.as_view(), name='map'),
     path('api/photos/', PhotoView.as_view(), name='photo_api'), # получаем JSON
+    path('api/photos/geojson/', PhotoGeoJSONView.as_view(), name='photos-geojson'),
+    path('api/photos/year-range/', views.photo_year_range, name='photo_year_range'),  # Новый путь для диапазона годов
+    path('api/user-tags/', views.user_tags, name='user-tags'),
     path('upload/', views.upload_photo, name='upload_photo'),
     path('photo/<int:photo_id>', views.view_photo, name='view_photo'),
     path('register/', views.register, name='register'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('api/photos/geojson/', PhotoGeoJSONView.as_view(), name='photos-geojson'),
-    path('api/photos/year-range/', views.photo_year_range, name='photo_year_range'),  # Новый путь для диапазона годов
     path('profile/', views.profile_view, name='profile'),
     path('users/<int:user_id>/', views.public_profile_view, name='public_profile'),
     path('gallery/', views.gallery_view, name='gallery'),
@@ -44,5 +45,6 @@ urlpatterns = [
     path('my-tags/', views.user_tags, name='user_tags'),
     path('tag/<str:tag_name>/', views.photos_by_tag, name='photos_by_tag'),
     path('tag-group/<str:tag_name>/', views.tag_group_photos, name='tag_group_photos'),
-    path('api/user-tags/', views.user_tags, name='user-tags'),
+    path('gallery/api/', views.gallery_api, name='gallery_api'),
+    path('api/photos/clustered/', ClusteredPhotoView.as_view(), name='clustered-photos'),
 ]

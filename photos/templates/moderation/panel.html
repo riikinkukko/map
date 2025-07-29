@@ -3,8 +3,70 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Панель модерации</title>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #1e1e1e;
+      padding: 10px 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 5px 10px;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 80px 15px 20px;
+      width: 100%;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
     h2 {
       text-align: center;
       margin-bottom: 30px;
@@ -12,29 +74,32 @@
 
     .photo-card {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
       background-color: #2a2a2a;
       border-radius: 10px;
       padding: 15px;
       margin-bottom: 20px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      position: relative;
     }
 
     .photo-info {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 15px;
     }
 
     .photo-info img {
-      width: 120px;
+      width: 100%;
+      max-width: 300px;
       height: auto;
       border-radius: 8px;
-      margin-right: 20px;
+      margin-bottom: 15px;
     }
 
     .photo-details {
-      max-width: 500px;
+      width: 100%;
     }
 
     .photo-details strong {
@@ -43,73 +108,103 @@
       color: #ccc;
     }
 
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
     .action-buttons a {
       background-color: #444;
       color: #fff;
       padding: 8px 12px;
-      margin-left: 8px;
       border-radius: 6px;
       text-decoration: none;
       font-size: 14px;
       transition: background-color 0.2s;
+      text-align: center;
+      flex: 1 1 auto;
+      min-width: 120px;
     }
 
     .action-buttons a:hover {
       background-color: #666;
     }
 
+    .demote-btn {
+      background-color: #ff4d4d !important;
+    }
+
     .no-photos {
       color: #999;
       text-align: center;
+      padding: 20px;
     }
 
     ::selection {
       background: #00bcd4;
       color: #000;
     }
- body {
-  margin: 0;
-  padding: 0;
-  background-color: #121212;
-  color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  display: flex;
-  flex-direction: column;
-  min-height: 30vh;
-}
 
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: #1e1e1e;
-  padding: 10px 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-  z-index: 10;
-}
+    @media (min-width: 768px) {
+      .photo-card {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
 
-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  padding-top: 9px;
-  padding-bottom: 20px;
-}
+      .photo-info {
+        flex-direction: row;
+        align-items: flex-start;
+        margin-bottom: 0;
+        flex: 1;
+        max-width: calc(100% - 150px);
+      }
 
-.container {
-  max-width: 900px;
-  width: 100%;
-  background-color: #1e1e1e;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
+      .photo-info img {
+        width: 120px;
+        height: 90px;
+        object-fit: cover;
+        margin-right: 20px;
+        margin-bottom: 0;
+      }
 
+      .action-buttons {
+        flex-direction: column;
+        justify-content: flex-start;
+        margin-top: 0;
+        margin-left: 20px;
+        width: 130px;
+      }
+
+      .action-buttons a {
+        flex: none;
+        min-width: 100%;
+        white-space: nowrap;
+        margin-bottom: 8px;
+      }
+
+      .action-buttons a:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 10px;
+      }
+
+      .nav-links {
+        gap: 10px;
+      }
+
+      .container {
+        padding: 15px;
+      }
+    }
   </style>
-  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
 </head>
 <body>
 <nav class="navbar">
@@ -157,9 +252,8 @@ main {
         </div>
         <div class="action-buttons">
           <a href="{% url 'edit_photo_moderator' photo.id %}">✏️ Изменить</a>
-          <a href="{% url 'delete_photo_moderator' photo.id %}" onclick="return confirm('Удалить фото?')">🗑️ Удалить</a><form method="post" style="margin-top: 20px;">
-        <a href="{% url 'demote_photo' photo.id %}" style="background-color: #ff4d4d; color: white; padding: 10px 18px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">Разжаловать фото</a>
-        </form>
+          <a href="{% url 'delete_photo_moderator' photo.id %}" onclick="return confirm('Удалить фото?')">🗑️ Удалить</a>
+          <a href="{% url 'demote_photo' photo.id %}" class="demote-btn">Разжаловать фото</a>
         </div>
       </div>
     {% endfor %}

@@ -1,0 +1,9 @@
+{% for image in images %}
+  <a href="/photo/{{image.id}}" class="gallery-item">
+    <img src="{{ image.image.url }}" alt="{{ image.name|default:'Фото' }}">
+    <div class="upload-info">
+      <span>Автор: {{ image.add_id.username }}</span>
+      <span>{{ image.uploaded_at|date:"d M Y H:i" }}</span>
+    </div>
+  </a>
+{% endfor %}
