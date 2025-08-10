@@ -1,11 +1,11 @@
 html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background-color: #121212;
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-      overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #121212;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+  overflow-x: hidden;
 }
 
 #map {
@@ -99,6 +99,7 @@ html, body {
   overflow: hidden;
   box-shadow: 0 0 5px rgba(0,0,0,0.6);
   cursor: pointer;
+  position: relative;
 }
 
 .marker img, .cluster-marker img {
@@ -106,10 +107,6 @@ html, body {
   height: 100%;
   object-fit: cover;
   display: block;
-}
-
-.cluster-marker {
-  position: relative;
 }
 
 .cluster-marker span {
@@ -121,66 +118,6 @@ html, body {
   font-size: 12px;
   padding: 2px 4px;
   border-radius: 0 0 0 4px;
-}
-
-/* Элементы управления картой - справа по центру */
-.map-controls {
-  position: absolute;
-  top: 30%;
-  right: 10px;
-  transform: translateY(-50%);
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.control-group {
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-
-/* Исключаем последнюю группу (где кнопка "Я") из стилей .control-group */
-.map-controls .control-group:last-child {
-  background: transparent;
-  box-shadow: none;
-  margin-top: 12px; /* ➡️ Опускаем на 10px вниз */
-  margin-right: -35px; /* ➡️ Сдвигаем правее */
-}
-
-.control-button {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  border: none;
-  background: transparent;
-  color: white;
-  cursor: pointer;
-  text-align: center;
-  font-size: 14px;
-}
-
-.control-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.control-button.active {
-  background: rgba(255, 255, 255, 0.2);
-  font-weight: bold;
-}
-
-.locate-button {
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.7); /* Фон как у других */
-  border-radius: 4px; /* Скругление углов */
-  box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Тень как у других */
 }
 
 /* Кнопка событий слева */
@@ -217,7 +154,6 @@ html, body {
   justify-content: center;
   z-index: 1000;
   padding: 0 10px;
-  transform: translateY(100px);
   transition: transform 0.5s ease;
 }
 
@@ -326,14 +262,10 @@ html, body {
   color: #fff;
 }
 
-.marker.filtered {
-  border: 3px solid #4CAF50;
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.7);
-}
-
+.marker.filtered,
 .cluster-marker.filtered {
   border: 3px solid #4CAF50;
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.7);
 }
 
 .context-menu {
@@ -363,6 +295,26 @@ html, body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+.locate-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1px solid #888;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.locate-button:hover {
+  background: rgba(255, 255, 255, 0.4);
+  color: #000;
+}
+
 /* Адаптация для мобильных */
 @media (max-width: 768px) {
   .user-section {
@@ -371,12 +323,6 @@ html, body {
 
   .nav-links a.user-link {
     display: inline-block;
-  }
-
-  .map-controls {
-    top: 30%;
-    right: 5px;
-    transform: translateY(-50%);
   }
 
   .events-control {
@@ -393,319 +339,47 @@ html, body {
     font-size: 13px;
     top: -25px;
   }
+
+  .timeline-slider::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+
+  .locate-button {
+    bottom: 80px;
+    right: 10px;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  .context-menu button {
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  .tag-button, .clear-tag-button {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+
+  .events-toggle {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+
+  #cookieBanner {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  #acceptCookies {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
 }
 
 @media (min-width: 769px) {
   .nav-links a.user-link {
     display: none;
-  }
-}
-.locate-button {
-position: absolute;
-bottom: 20px;
-right: 20px;
-background: rgba(255, 255, 255, 0.2);
-color: #fff;
-border: 1px solid #888;
-border-radius: 6px;
-padding: 8px 12px;
-font-weight: bold;
-cursor: pointer;
-z-index: 1000;
-backdrop-filter: blur(4px);
-}
-
-.locate-button:hover {
-background: rgba(255, 255, 255, 0.4);
-color: #000;
-}
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background-color: #121212;
-  color: #fff;
-  font-family: 'Segoe UI', sans-serif;
-  overflow-x: hidden;
-}
-
-#map {
-  width: 100%;
-  height: calc(100vh - 50px);
-}
-
-/* Навбар */
-.navbar {
-  display: flex;
-  align-items: center;
-  background-color: #1a1a1a;
-  padding: 8px 15px;
-  height: 50px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  position: relative;
-  z-index: 1000;
-}
-
-.nav-links {
-  display: flex;
-  overflow-x: auto;
-  scrollbar-width: none;
-  white-space: nowrap;
-  flex-grow: 1;
-  padding: 0 10px;
-}
-
-.nav-links::-webkit-scrollbar {
-  display: none;
-}
-
-.logo { margin-right: 15px; flex-shrink: 0; }
-
-.nav-links a {
-  color: white;
-  text-decoration: none;
-  padding: 8px 12px;
-  margin: 0 5px;
-  border-radius: 4px;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.nav-links a:hover {
-  background-color: #333;
-}
-
-.user-section {
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.user-section a {
-  color: white;
-  text-decoration: none;
-  margin-right: 10px;
-}
-
-.logout-button {
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.logout-button:hover {
-  background-color: #333;
-}
-
-.door-icon {
-  margin-right: 5px;
-}
-
-.marker, .cluster-marker {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 0 5px rgba(0,0,0,0.6);
-  cursor: pointer;
-  position: relative;
-}
-
-.marker img, .cluster-marker img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.cluster-marker span {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  font-size: 12px;
-  padding: 2px 4px;
-  border-radius: 0 0 0 4px;
-}
-
-/* Контролы справа */
-.map-controls {
-  position: absolute;
-  top: 30%;
-  right: 10px;
-  transform: translateY(-50%);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.control-button {
-  background: #333;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  width: auto;
-}
-
-.control-button:hover {
-  background: #444;
-}
-
-.control-button.active {
-  background: #4CAF50;
-}
-
-/* Кнопка "Я" */
-.locate-button {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.7);
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-
-/* События */
-.events-control {
-  position: absolute;
-  top: 70px;
-  left: 10px;
-  z-index: 1000;
-}
-
-.events-toggle {
-  background: rgba(0,0,0,0.7);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-
-.events-toggle:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Теги */
-.tags-list {
-  display: none;
-  flex-direction: column;
-  background: rgba(0,0,0,0.8);
-  padding: 6px;
-  border-radius: 4px;
-  margin-top: 6px;
-  max-height: 300px;
-  overflow-y: auto;
-  width: 180px;
-}
-
-.tags-list.show {
-  display: flex;
-}
-
-.tag-button, .clear-tag-button {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  margin: 2px 0;
-  border-radius: 3px;
-  text-align: left;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.tag-button.active {
-  background: #4CAF50;
-  font-weight: bold;
-}
-
-.tag-button:hover, .clear-tag-button:hover {
-  background: rgba(255,255,255,0.2);
-}
-
-/* Таймлайн */
-.timeline-container {
-  position: absolute;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  padding: 0 10px;
-}
-
-.timeline {
-  background: rgba(0,0,0,0.7);
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.7);
-  color: white;
-  max-width: 600px;
-  width: 100%;
-}
-
-.timeline-slider {
-  width: 100%;
-  margin: 8px 0;
-  height: 6px;
-  background: linear-gradient(to right, #333, #4CAF50);
-  border-radius: 3px;
-  outline: none;
-  -webkit-appearance: none;
-}
-
-.timeline-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: white;
-  border: 3px solid #4CAF50;
-  cursor: pointer;
-}
-
-.current-year-display {
-  text-align: center;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.timeline-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-}
-
-/* Выделение при фильтрации */
-.marker.filtered, .cluster-marker.filtered {
-  border: 2px solid #4CAF50;
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
-}
-
-/* Адаптация */
-@media (max-width: 768px) {
-  .map-controls {
-    top: 20%;
-    right: 5px;
-  }
-  .events-control {
-    top: 60px;
-    left: 5px;
   }
 }
