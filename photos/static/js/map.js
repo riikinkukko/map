@@ -17,6 +17,30 @@ ymaps.ready(init);
 
 let map;
 
+const isTouch = 'ontouchstart' in window;
+
+function getClientPosition(event) {
+  if (event.touches && event.touches.length > 0) {
+    return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  } else if (event.changedTouches && event.changedTouches.length > 0) {
+    return { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY };
+  } else {
+    return { x: event.clientX, y: event.clientY };
+  }
+}
+
+function addLongPressHandler(object, callback, pressDuration = 800) {
+  let timer;
+  object.events.add('touchstart', (e) => {
+    timer = setTimeout(() => {
+      callback(e);
+    }, pressDuration);
+  });
+  object.events.add(['touchmove', 'touchend'], () => {
+    clearTimeout(timer);
+  });
+}
+
 function init() {
   map = new ymaps.Map("map", {
     center: [55.7558, 37.6173],
@@ -39,20 +63,20 @@ function init() {
 
     contextMenu = document.createElement('div');
     contextMenu.className = 'context-menu';
-    contextMenu.style.top = `${originalEvent.clientY}px`;
-    contextMenu.style.left = `${originalEvent.clientX}px`;
+    const pos = getClientPosition(originalEvent);
+    contextMenu.style.top = `${pos.y}px`;
+    contextMenu.style.left = `${pos.x}px`;
 
     const addBtn = document.createElement('button');
     addBtn.textContent = 'Добавить фото';
     addBtn.onclick = () => {
       if (window.userIsAuthenticated) {
-        window.location.href = `/upload/?lat=${coords[0]}&lon=${coords[1]}`;
+        window.location.href = `/upload/?lat=${coords[0]}&lng=${coords[1]}`;
       } else {
         alert("Авторизуйтесь, чтобы добавить фото");
       }
       removeContextMenu();
     };
-
 
     contextMenu.appendChild(addBtn);
     document.body.appendChild(contextMenu);
@@ -64,6 +88,47 @@ function init() {
       }
     });
   });
+
+  if (isTouch) {
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    addLongPressHandler(map, (e) => {
+      const coords = e.get('coords');
+      const originalEvent = e.get('domEvent').originalEvent;
+      const target = originalEvent.target;
+
+      if (target.closest('.cluster-marker')) return;
+
+      removeContextMenu();
+
+      contextMenu = document.createElement('div');
+      contextMenu.className = 'context-menu';
+      const pos = getClientPosition(originalEvent);
+      contextMenu.style.top = `${pos.y}px`;
+      contextMenu.style.left = `${pos.x}px`;
+
+      const addBtn = document.createElement('button');
+      addBtn.textContent = 'Добавить фото';
+      addBtn.onclick = () => {
+        if (window.userIsAuthenticated) {
+          window.location.href = `/upload/?lat=${coords[0]}&lng=${coords[1]}`;
+        } else {
+          alert("Авторизуйтесь, чтобы добавить фото");
+        }
+        removeContextMenu();
+      };
+
+      contextMenu.appendChild(addBtn);
+      document.body.appendChild(contextMenu);
+
+      document.addEventListener('click', function handler(event) {
+        if (!contextMenu.contains(event.target)) {
+          removeContextMenu();
+          document.removeEventListener('click', handler);
+        }
+      });
+    });
+  }
 
   eventsToggle.addEventListener('click', () => {
     tagsList.classList.toggle('show');
@@ -98,7 +163,6 @@ async function loadPhotos() {
   allPhotos = data.features;
   renderMarkers();
 }
-
 
 function renderMarkers() {
   map.geoObjects.removeAll();
@@ -184,6 +248,14 @@ function createPhotoPlacemark(feature) {
     showMarkerContextMenu(e.get('domEvent').originalEvent, props);
   });
 
+  if (isTouch) {
+    addLongPressHandler(placemark, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showMarkerContextMenu(e.get('domEvent').originalEvent, props);
+    });
+  }
+
   return placemark;
 }
 
@@ -226,6 +298,14 @@ function createClusterPlacemark(cluster) {
     showClusterContextMenu(e.get('domEvent').originalEvent, tag);
   });
 
+  if (isTouch) {
+    addLongPressHandler(placemark, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showClusterContextMenu(e.get('domEvent').originalEvent, tag);
+    });
+  }
+
   return placemark;
 }
 
@@ -236,13 +316,14 @@ function removeContextMenu() {
   }
 }
 
-function showMarkerContextMenu(e, props) {
+function showMarkerContextMenu(originalEvent, props) {
   removeContextMenu();
 
   contextMenu = document.createElement('div');
   contextMenu.className = 'context-menu';
-  contextMenu.style.top = `${e.clientY}px`;
-  contextMenu.style.left = `${e.clientX}px`;
+  const pos = getClientPosition(originalEvent);
+  contextMenu.style.top = `${pos.y}px`;
+  contextMenu.style.left = `${pos.x}px`;
 
   if (currentTag) {
     const resetBtn = document.createElement('button');
@@ -278,13 +359,14 @@ function showMarkerContextMenu(e, props) {
   });
 }
 
-function showClusterContextMenu(e, tag) {
+function showClusterContextMenu(originalEvent, tag) {
   removeContextMenu();
 
   contextMenu = document.createElement('div');
   contextMenu.className = 'context-menu';
-  contextMenu.style.top = `${e.clientY}px`;
-  contextMenu.style.left = `${e.clientX}px`;
+  const pos = getClientPosition(originalEvent);
+  contextMenu.style.top = `${pos.y}px`;
+  contextMenu.style.left = `${pos.x}px`;
 
   if (currentTag) {
     const resetBtn = document.createElement('button');
@@ -377,3 +459,4 @@ window.locateUser = function () {
     alert('Не удалось получить ваше местоположение');
   });
 };
+
