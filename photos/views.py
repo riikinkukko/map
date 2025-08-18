@@ -2,49 +2,31 @@ from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework import status
 from django.views.generic import TemplateView
 from rest_framework.views import APIView
-from pastvu.settings import MODERATOR_IDS
 from .decorators import moderator_required
 from .serializers import PhotoSerializer
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.http import JsonResponse
-from .forms import ProfileForm, PhotoReportForm
-from .models import Photo, Tag, Comment, Profile, TagMergeRequest, TagGroup
-from .forms import PhotoForm, RegisterForm, PhotoEditForm
+from .forms import ProfileForm, PhotoReportForm, PhotoForm, RegisterForm, PhotoEditForm, CommentForm
+from .models import Photo, Tag, Comment, Profile, TagMergeRequest, TagGroup, LoginAttempt
 from django.contrib.auth.decorators import login_required
-from django.utils.text import slugify
-from django.http import HttpResponseRedirect
-from django.core.mail import send_mail
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
-from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode
-from django.contrib.auth.tokens import default_token_generator
-from django.conf import settings
-from .forms import CommentForm
-from django.core.mail import EmailMessage
-from django.db.models import Min, Max
+from django.db.models import Min, Max, Count, Avg, F, IntegerField
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from .models import LoginAttempt
 from django.utils import timezone
 from datetime import timedelta
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.core.mail import EmailMessage
 from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
-from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
 from threading import Thread
 from django.core.paginator import Paginator
-from django.http import JsonResponse
 from django.template.loader import render_to_string
-from django.db.models import Count, Avg, F, IntegerField
 from django.db.models.functions import Cast
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
@@ -685,3 +667,4 @@ def delete_comment(request, comment_id):
         comment.delete()
         return redirect('view_photo', photo_id=photo_id)
     return redirect('map')
+
